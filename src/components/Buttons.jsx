@@ -1,14 +1,26 @@
 import React from 'react'
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import {useNavigate} from 'react-router-dom'
 
 export default function Buttons() {
+  const [alignment, setAlignment] = React.useState();
+
+  const handleChange = (event, newAlignment) => {
+    setAlignment(newAlignment);
+  };
+  const navigate = useNavigate()
   return (
-    <>
-      <ButtonGroup variant="outlined" aria-label="outlined button group">
-        <Button>Camera</Button>
-        <Button>Photo</Button>
-      </ButtonGroup>
-    </>
+    <ToggleButtonGroup
+      style={{padding: '50px'}} 
+      color="primary"
+      value={alignment}
+      exclusive
+      onChange={handleChange}
+      aria-label="Platform"
+    >
+      <ToggleButton onClick={()=>{navigate('camera')}} value="camera">Camera</ToggleButton>
+      <ToggleButton onClick={()=>{navigate('file')}} value="file">File</ToggleButton>
+    </ToggleButtonGroup>
   )
 }
