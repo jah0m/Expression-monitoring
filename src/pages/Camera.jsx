@@ -1,14 +1,17 @@
 import React, {useState, useEffect} from 'react'
 import Webcam from 'react-webcam'
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import axios from 'axios';
-import * as faceapi from 'face-api.js';
+import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
+import axios from 'axios'
+import Chart from '../components/Chart'
+import moment from 'moment'
+import * as faceapi from 'face-api.js'
 
 export default function Camera() {
   const [imgSrc, setImgSrc] = useState()
-  const [expression, setExpression] = useState(null);
-  const webcamRef = React.useRef(null);
+  const [expression, setExpression] = useState(null)
+  const [expData, setExpData] = useState([{time: '0', score: '0'}])
+  const webcamRef = React.useRef(null)
   let myImg = new Image()
   const MODEL_URL = '../models'
 
@@ -23,7 +26,7 @@ export default function Camera() {
   const autoCapture = () => {
     let captureTimer = setInterval(()=>{
       capture()
-    },1000)
+    },40)
   }
 
   async function init() {
@@ -84,37 +87,52 @@ export default function Camera() {
     }).then(response => {
       console.log(response.data)
       setExpression(response.data)
+      let score = response.data.happy - response.data.sad
+      score = score.toFixed(3)
+      
+      let data = {
+        time : moment().format('h:mm:sss'),
+        score : score
+      }
+      let arr = [...expData]
+      console.log(arr)
+      arr.push(data)
+      setExpData(arr)
     })
   }
 
+
   return (
-    <div className='camera'>
-      <Webcam
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-      /><br />
-      { imgSrc && 
-        <div>
-          <img alt="not fount" width={"250px"} src={imgSrc} />
-          <canvas id="canvas"></canvas>
-        </div>
-      }
-      <ul>
-        { expression &&
-          Object.keys(expression).map(key =>{
-            return <li key={key}>{key}: {expression[key]}</li>
-          }) 
+    <>
+      <div className='camera'>
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+        /><br />
+        { imgSrc && 
+          <div>
+            <img alt="not fount" width={"250px"} src={imgSrc} />
+            <canvas id="canvas"></canvas>
+          </div>
         }
-      </ul>
-      <Stack>
-        <Button onClick={capture} variant="contained" component="label">
-          Capture
-        </Button><br />
-        <Button onClick={autoCapture} variant="contained" component="label">
-          Auto Capture
-        </Button>
-      </Stack>
-    </div>
+        <ul>
+          { expression &&
+            Object.keys(expression).map(key =>{
+              return <li key={key}>{key}: {expression[key]}</li>
+            }) 
+          }
+        </ul>
+        <Stack>
+          <Button onClick={capture} variant="contained" component="label">
+            Capture
+          </Button><br />
+          <Button onClick={autoCapture} variant="contained" component="label">
+            Auto Capture
+          </Button>
+        </Stack>
+      </div>
+      <Chart data={expData} />
+    </>
   )
 }
