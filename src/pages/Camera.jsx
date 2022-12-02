@@ -10,9 +10,10 @@ import * as faceapi from 'face-api.js'
 export default function Camera() {
   const [imgSrc, setImgSrc] = useState()
   const [expression, setExpression] = useState(null)
-  const [expData, setExpData] = useState([{time: '0', score: '0'}])
-  const webcamRef = React.useRef(null)
+  const [expData, setExpData] = useState([])
   const [captureTimer, setCaptureTimer] = useState()
+  const [captureInvterval, setCaptureInveterval] = useState(100)
+  const webcamRef = React.useRef(null)
   let myImg = new Image()
   const MODEL_URL = '../models'
 
@@ -27,7 +28,7 @@ export default function Camera() {
   const autoCapture = () => {
     const timer = setInterval(()=>{
       capture()
-    },100)
+    },captureInvterval)
     setCaptureTimer(timer)
   }
 
@@ -35,13 +36,27 @@ export default function Camera() {
     clearInterval(captureTimer)
   }
 
-  async function init() {
+  const clearData = ()=> {
+    setExpData([])
+  }
+
+  const saveData = () => {
+    let csvContent = "data:text/csv;charset=utf-8,"
+    expData.forEach((item)=>{
+      let row = `${item.time},${item.score}`
+      csvContent += row + "\r\n";
+    })
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+  }
+
+  async function loadModel() {
     await faceapi.loadTinyFaceDetectorModel(MODEL_URL)
     console.log('model loaded')
   }
   
   useEffect(() => {
-    init()
+    loadModel()
   }, [])
 
   
@@ -134,14 +149,18 @@ export default function Camera() {
           <Button onClick={capture} variant="contained" component="label">
             Capture
           </Button><br />
+          <input type="number" defaultValue={100} onChange={(e)=>{setCaptureInveterval(e.target.value)}}/>
           <Button onClick={autoCapture} variant="contained" component="label">
             Start Record
           </Button><br />
           <Button onClick={stopCapture} variant="contained" component="label">
             Stop Record
           </Button><br />
-          <Button onClick={()=>setExpData([])} variant="contained" component="label">
+          <Button onClick={clearData} variant="contained" component="label">
             Clear data
+          </Button><br />
+          <Button onClick={saveData} variant="contained" component="label">
+            Save data
           </Button>
         </Stack>
       </div>
