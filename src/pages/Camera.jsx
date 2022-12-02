@@ -12,6 +12,7 @@ export default function Camera() {
   const [expression, setExpression] = useState(null)
   const [expData, setExpData] = useState([{time: '0', score: '0'}])
   const webcamRef = React.useRef(null)
+  const [captureTimer, setCaptureTimer] = useState()
   let myImg = new Image()
   const MODEL_URL = '../models'
 
@@ -24,9 +25,14 @@ export default function Camera() {
   );
 
   const autoCapture = () => {
-    let captureTimer = setInterval(()=>{
+    const timer = setInterval(()=>{
       capture()
-    },40)
+    },100)
+    setCaptureTimer(timer)
+  }
+
+  const stopCapture = ()=> {
+    clearInterval(captureTimer)
   }
 
   async function init() {
@@ -41,26 +47,27 @@ export default function Camera() {
   
   useEffect(() => {
     if (!imgSrc) return
-    console.log(imgSrc)
+    // console.log(imgSrc)
     myImg.src = imgSrc
-    console.log(myImg.src)
-    userImageUploaded()
+    let time = moment().format('h:mm:ss.S')
+    // console.log(myImg.src)
+    userImageUploaded(time)
     // uploadImage()
   }, [imgSrc])
 
-  async function userImageUploaded() {
+  async function userImageUploaded(time) {
     console.log('start detect')
     let preTime = new Date().getTime()
     let result = await faceapi.detectSingleFace(myImg, new faceapi.TinyFaceDetectorOptions())
-    console.log(result)
+    // console.log(result)
     let curTime = new Date().getTime()
     console.log('cost: ', (curTime-preTime))
     let box = result._box
     let { _x, _y, _width, _height } = box
-    crop(myImg, _x, _y, _width, _height)
+    crop(myImg, _x, _y, _width, _height, time)
   }
   
-  function crop(img, x, y, width, height){
+  function crop(img, x, y, width, height, time){
     const canvas = document.querySelector('canvas')
     const ctx = canvas.getContext('2d')
   
@@ -70,11 +77,11 @@ export default function Camera() {
     ctx.drawImage(img, x, y, width, height, 0, 0, 48, 48)
   
     //canvas to base64
-    console.log(canvas.toDataURL("image/jpeg"))
-    uploadImage(canvas.toDataURL("image/jpeg"))
+    // console.log(canvas.toDataURL("image/jpeg"))
+    uploadImage(canvas.toDataURL("image/jpeg"), time)
   }
 
-  const uploadImage = (img_b64) => {
+  const uploadImage = (img_b64, time) => {
     // let img_b64 = getBase64(imgSrc)
 
     const regex = /data:.*base64,/
@@ -85,17 +92,17 @@ export default function Camera() {
       url: 'http://127.0.0.1:5000/predict',
       params: param,
     }).then(response => {
-      console.log(response.data)
+      // console.log(response.data)
       setExpression(response.data)
       let score = response.data.happy - response.data.sad
       score = score.toFixed(3)
       
       let data = {
-        time : moment().format('h:mm:sss'),
+        time : time,
         score : score
       }
       let arr = [...expData]
-      console.log(arr)
+      // console.log(arr)
       arr.push(data)
       setExpData(arr)
     })
@@ -128,7 +135,13 @@ export default function Camera() {
             Capture
           </Button><br />
           <Button onClick={autoCapture} variant="contained" component="label">
-            Auto Capture
+            Start Record
+          </Button><br />
+          <Button onClick={stopCapture} variant="contained" component="label">
+            Stop Record
+          </Button><br />
+          <Button onClick={()=>setExpData([])} variant="contained" component="label">
+            Clear data
           </Button>
         </Stack>
       </div>
