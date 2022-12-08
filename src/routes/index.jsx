@@ -1,5 +1,6 @@
 import Home from "../pages/Home"
 import Camera from '../pages/Camera'
+import Video from "../pages/Video"
 import FileUpload from '../pages/FileUpload'
 
 const routes =  [
@@ -10,6 +11,10 @@ const routes =  [
       {
         path: 'camera',
         element: <Camera />
+      },
+      {
+        path: 'video',
+        element: <Video />
       },
       {
         path: 'file',

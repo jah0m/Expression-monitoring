@@ -20,6 +20,7 @@ export default function Buttons() {
       aria-label="Platform"
     >
       <ToggleButton onClick={()=>{navigate('camera')}} value="camera">Camera</ToggleButton>
+      <ToggleButton onClick={()=>{navigate('video')}} value="video">Video</ToggleButton>
       <ToggleButton onClick={()=>{navigate('file')}} value="file">File</ToggleButton>
     </ToggleButtonGroup>
   )
