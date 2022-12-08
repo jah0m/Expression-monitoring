@@ -17,6 +17,7 @@ export default function Video() {
 
   const clearData = ()=> {
     setExpData([])
+    setPieData([])
     window.localStorage.setItem('data', null)
   }
 
@@ -27,6 +28,7 @@ export default function Video() {
     video.src = media
     video.style.display = "block"
     video.play()
+    video.volume = 0
     startTime = new Date().getTime()
     const timer = setInterval(userImageUploaded, playInvterval)
     setPlayTimer(timer)
@@ -223,7 +225,7 @@ export default function Video() {
       </div>
       <div className='charts'>
         <Chart data={expData} />
-        <PieChart width={700} height={700}>
+        <PieChart width={300} height={500}>
           <Pie 
             data={pieData}
             cx="50%"
