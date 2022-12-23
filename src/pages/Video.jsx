@@ -10,6 +10,7 @@ export default function Video() {
   const [expression, setExpression] = useState(null)
   const [expData, setExpData] = useState([])
   const [pieData, setPieData] = useState([])
+  const [detectData, setDetectData] = useState([])
   const [playTimer, setPlayTimer] = useState()
   const [playInvterval, setPlayInveterval] = useState(300)
   const MODEL_URL = '../models'
@@ -18,7 +19,9 @@ export default function Video() {
   const clearData = ()=> {
     setExpData([])
     setPieData([])
+    setDetectData([])
     window.localStorage.setItem('data', null)
+    window.localStorage.setItem('detectData', null)
   }
 
   const playVideo = () => {
@@ -29,6 +32,10 @@ export default function Video() {
     video.style.display = "block"
     video.play()
     video.volume = 0
+    video.addEventListener('ended', ()=>{
+      console.log('stop video')
+      clearInterval(playTimer)
+    })
     startTime = new Date().getTime()
     const timer = setInterval(userImageUploaded, playInvterval)
     setPlayTimer(timer)
@@ -45,6 +52,12 @@ export default function Video() {
     let csvContent = "data:text/csv;charset=utf-8,"
     expData.forEach((item)=>{
       let row = `${item.time},${item.score}`
+      csvContent += row + "\r\n";
+    })
+    var encodedUri = encodeURI(csvContent);
+
+    detectData.forEach((item)=>{
+      let row = `${item.time},${item.isDetect}`
       csvContent += row + "\r\n";
     })
     var encodedUri = encodeURI(csvContent);
@@ -71,9 +84,25 @@ export default function Video() {
       if (result) {
         let box = result._box
         let { _x, _y, _width, _height } = box
+        let data = {
+          time : passTime,
+          isDetect: true
+        }
+        let arr = JSON.parse(window.localStorage.getItem('detectData')) || []
+        arr.push(data)
+        window.localStorage.setItem('detectData', JSON.stringify(arr))
+        setDetectData(arr)
         crop(video, _x, _y, _width, _height, passTime)
       } else {
         console.log("Can't detect face")
+        let data = {
+          time : passTime,
+          isDetect: false
+        }
+        let arr = JSON.parse(window.localStorage.getItem('detectData')) || []
+        arr.push(data)
+        window.localStorage.setItem('detectData', JSON.stringify(arr))
+        setDetectData(arr)
       }
     })
   }
@@ -212,7 +241,7 @@ export default function Video() {
           <Button onClick={playVideo} variant="contained" component="label">
             Play
           </Button><br />
-          <Button onClick={stopVideo} variant="contained" component="label">
+          <Button onClick={stopVideo} variant="contained" component="label" name="stopButton">
             Stop
           </Button><br />
           <Button onClick={clearData} variant="contained" component="label">
