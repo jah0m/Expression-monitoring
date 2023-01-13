@@ -109,7 +109,7 @@ export default function Camera() {
     }).then(response => {
       // console.log(response.data)
       setExpression(response.data)
-      let score = response.data.happy - response.data.sad
+      let score = response.data.happy - response.data.sad - response.data.anger - response.data.fear
       score = score.toFixed(3)
       
       let data = {

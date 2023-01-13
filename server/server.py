@@ -26,10 +26,17 @@ def getExpr(img_b64):
     predict_x=model.predict(px) 
     labels = ['happy', 'sad', 'neutral']
     result = predict_x[0].tolist()
+    # result_json = {
+    #     'happy': result[0],
+    #     'sad': result[1],
+    #     'neutral': result[2]
+    # }
     result_json = {
-        'happy': result[0],
-        'sad': result[1],
-        'neutral': result[2]
+        'anger': result[0],
+        'fear': result[1],
+        'happy': result[2],
+        'sad': result[3],
+        'netural': result[4]
     }
     return json.dumps(result_json)
 
@@ -50,7 +57,7 @@ def pred():
 if __name__ == "__main__":
     print('loading model')
     # load model
-    model = tf.keras.models.load_model("model.h5")
+    model = tf.keras.models.load_model("model2.h5")
     model.compile(loss='binary_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
